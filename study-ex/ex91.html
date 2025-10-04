@@ -1,0 +1,76 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>D3 Example</title>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"
+      integrity="sha512-hdze9Aenr+EJdZaPIlRA4XxE+bMQ7K2FVKnWqq431gidZF+v9dLdXuGat5YTBZg4k463MmREQqdA1NIHL0vY6Q=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+  </head>
+  <body>
+    <!-- using variables to define the margin -->
+    <script>
+      const outerWidth = 300;
+      const outerHeight = 250;
+
+      const marginLeft = 30;
+      const marginTop = 30;
+      const marginRight = 30;
+      const marginBottom = 30;
+
+      const innerWidth = outerWidth - marginLeft - marginRight;
+      const innerHeight = outerHeight - marginTop - marginBottom;
+      const rMin = 0;
+      const rMax = 20;
+      const xColumn = "population";
+      const yColumn = "gdp";
+      const rColumn = "population";
+
+      const svg = d3
+        .select("body")
+        .append("svg")
+        .attr("width", outerWidth)
+        .attr("height", outerHeight);
+
+      const g = svg
+        .append("g")
+        .attr("transform", `translate(${marginLeft}, ${marginTop})`);
+
+      const xScale = d3.scale.log().range([0, innerWidth]);
+      const yScale = d3.scale.log().range([innerHeight, 0]);
+      const rScale = d3.scale.sqrt().range([rMin, rMax]);
+
+      const render = (data) => {
+        xScale.domain(d3.extent(data, (d) => d[xColumn]));
+        yScale.domain(d3.extent(data, (d) => d[yColumn]));
+        rScale.domain([0, d3.max(data, (d) => d[rColumn])]);
+
+        // Binding data
+        const circles = g.selectAll("circle").data(data);
+
+        // Enter
+        circles.enter().append("circle");
+
+        // Update
+        circles
+          .attr("cx", (d) => xScale(d[xColumn]))
+          .attr("cy", (d) => yScale(d[yColumn]))
+          .attr("r", (d) => rScale(d[rColumn]));
+
+        // Exit
+        circles.exit().remove();
+      };
+
+      const type = (d) => {
+        d.population = +d.population;
+        d.gdp = +d.gdp;
+
+        return d;
+      };
+
+      d3.csv("population_vs_gdp.csv", type, (data) => render(data));
+    </script>
+  </body>
+</html>

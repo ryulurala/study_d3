@@ -1,0 +1,126 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>D3 Example</title>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.5/d3.min.js"
+      integrity="sha512-hdze9Aenr+EJdZaPIlRA4XxE+bMQ7K2FVKnWqq431gidZF+v9dLdXuGat5YTBZg4k463MmREQqdA1NIHL0vY6Q=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <style>
+      .chart-line {
+        fill: none;
+        stroke: black;
+        stroke-width: 1px;
+      }
+      .axis text {
+        font-size: 12pt;
+      }
+
+      .axis .label {
+        font-size: 22pt;
+      }
+
+      .axis path,
+      .axis line {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- axes on a line chart -->
+    <script>
+      const outerWidth = 500;
+      const outerHeight = 250;
+      const margin = { left: 70, top: 5, right: 5, bottom: 60 };
+
+      const xColumn = "timestamp";
+      const yColumn = "temperature";
+
+      const xAxisLabelText = "Time";
+      const xAxisLabelOffset = 48;
+
+      const yAxisLabelText = "Temperature °C";
+      const yAxisLabelOffset = 40;
+
+      const innerWidth = outerWidth - margin.left - margin.right;
+      const innerHeight = outerHeight - margin.top - margin.bottom;
+
+      const svg = d3
+        .select("body")
+        .append("svg")
+        .attr("width", outerWidth)
+        .attr("height", outerHeight);
+      const g = svg
+        .append("g")
+        .attr("transform", `translate(${margin.left}, ${margin.top})`);
+      const path = g.append("path").attr("class", "chart-line");
+
+      const xAxisG = g
+        .append("g")
+        .attr("class", "x axis")
+        .attr("transform", `translate(0, ${innerHeight})`);
+      const xAxisLabel = xAxisG
+        .append("text")
+        .style("text-anchor", "middle")
+        .attr("transform", `translate(${innerWidth / 2}, ${xAxisLabelOffset})`)
+        .attr("class", "label")
+        .text(xAxisLabelText);
+
+      const yAxisG = g.append("g").attr("class", "y axis");
+      const yAxisLabel = yAxisG
+        .append("text")
+        .style("text-anchor", "middle")
+        .attr(
+          "transform",
+          `translate(${-yAxisLabelOffset}, ${innerHeight / 2}) rotate(-90)`
+        )
+        .attr("class", "label")
+        .text(yAxisLabelText);
+
+      const xScale = d3.time.scale().range([0, innerWidth]);
+      const yScale = d3.scale.linear().range([innerHeight, 0]);
+
+      const xAxis = d3.svg
+        .axis()
+        .scale(xScale)
+        .orient("bottom")
+        .ticks(5) // Use approximately 5 ticks marks
+        .outerTickSize(0); // Turn off the marks at the end of the axis.
+      const yAxis = d3.svg
+        .axis()
+        .scale(yScale)
+        .orient("left")
+        .ticks(5)
+        .tickFormat(d3.format("s"))
+        .outerTickSize(0); // Turn off the marks at the end of the axis.
+
+      const line = d3.svg
+        .line()
+        .x((d) => xScale(d[xColumn]))
+        .y((d) => yScale(d[yColumn]));
+
+      const render = (data) => {
+        xScale.domain(d3.extent(data, (d) => d[xColumn]));
+        yScale.domain(d3.extent(data, (d) => d[yColumn]));
+
+        xAxisG.call(xAxis);
+        yAxisG.call(yAxis);
+
+        path.attr("d", line(data));
+      };
+
+      const type = (d) => {
+        d.timestamp = new Date(d.timestamp);
+        d.temperature = +d.temperature;
+
+        return d;
+      };
+
+      d3.csv("week_temperature_sf.csv", type, render);
+    </script>
+  </body>
+</html>

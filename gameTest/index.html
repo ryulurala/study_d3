@@ -1,0 +1,52 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>KDC-D3</title>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/canvg/1.1/rgbcolor.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/canvg/1.1/canvg.min.js"></script>
+  </head>
+
+  <body>
+    <button id="saveButton">Save as PNG</button>
+
+    <!-- 그래프 그리기 js -->
+    <script type="module">
+      import { initRowData, processData, draw } from "./visualizeData.js";
+
+      const DATA_FILE_PATH = "in/data.csv";
+
+      // svg element를 body에 추가
+      const body = d3.select("body");
+
+      d3.csv(DATA_FILE_PATH, initRowData)
+        .then((data) => processData(data))
+        .then((processedData) => draw(processedData, body))
+        .then((svg) => {
+          console.log(svg);
+        });
+
+      // 버튼 클릭 이벤트에 저장 동작 추가
+      document
+        .getElementById("saveButton")
+        .addEventListener("click", function () {
+          // SVG를 PNG로 변환
+          const svgElement = document.querySelector("svg");
+          const svgString = new XMLSerializer().serializeToString(svgElement);
+
+          canvg(document.getElementById("canvas"), svgString);
+
+          // PNG 파일로 저장
+          const canvas = document.getElementById("canvas");
+          const imgData = canvas.toDataURL("image/png");
+          const link = document.createElement("a");
+          link.href = imgData;
+          link.download = "chart.png";
+          link.click();
+        });
+    </script>
+
+    <!-- PNG 저장을 위한 숨겨진 캔버스 -->
+    <canvas id="canvas" style="display: none"></canvas>
+  </body>
+</html>
